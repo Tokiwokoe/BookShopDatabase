@@ -22,45 +22,55 @@ lang = ('Китайский', 'Арабский', 'Хинди', 'Английс�
 # Таблицы-справочники
 def generate_dist(id: list[int]) -> str:
     data = 'INSERT INTO "District" VALUES '
-    for i in range(10000):  # генерация района
-        data = data + f'({id[0] + i + 1}, \'{random.choice(dist)}\')'
-        if i != 9999:
+    if not id:
+        id = [0]
+    for i in range(1, 11):  # генерация района
+        data = data + f'({id[0] + i}, \'{random.choice(dist)}\')'
+        if i < 10:
             data = data + ', '
     return data
 
 
 def generate_city(id: list[int]) -> str:
     data = 'INSERT INTO "City" VALUES '
-    for i in range(10000):  # генерация города
-        data = data + f'({id[0] + i + 1}, \'{random.choice(cities)}\')'
-        if i != 9999:
+    if not id:
+        id = [0]
+    for i in range(1, 11):  # генерация города
+        data = data + f'({id[0] + i}, \'{random.choice(cities)}\')'
+        if i < 10:
             data = data + ', '
     return data
 
 
 def generate_country(id: list[int]) -> str:
     data = 'INSERT INTO "Country" VALUES '
-    for i in range(10000):  # генерация страны
-        data = data + f'({id[0] + i + 1}, \'{random.choice(countries)}\')'
-        if i != 9999:
+    if not id:
+        id = [0]
+    for i in range(1, 11):  # генерация страны
+        data = data + f'({id[0] + i}, \'{random.choice(countries)}\')'
+        if i < 10:
             data = data + ', '
     return data
 
 
 def generate_prop(id: list[int]) -> str:
-    data = 'INSERT INTO "PropertyType" VALUES '
-    for i in range(10000):  # генерация типа собственности
-        data = data + f'({id[0] + i + 1}, \'{random.choice(prop)}\')'
-        if i != 9999:
+    data = 'INSERT INTO "Property_type" VALUES '
+    if not id:
+        id = [0]
+    for i in range(1, 11):  # генерация типа собственности
+        data = data + f'({id[0] + i}, \'{random.choice(prop)}\')'
+        if i < 10:
             data = data + ', '
     return data
 
 
 def generate_language(id: list[int]) -> str:
     data = 'INSERT INTO "Language" VALUES '
-    for i in range(10000):  # генерация языка
-        data = data + f'({id[0] + i + 1}, \'{random.choice(lang)}\')'
-        if i != 9999:
+    if not id:
+        id = [0]
+    for i in range(1, 11):  # генерация языка
+        data = data + f'({id[0] + i}, \'{random.choice(lang)}\')'
+        if i < 10:
             data = data + ', '
     return data
 
@@ -68,52 +78,62 @@ def generate_language(id: list[int]) -> str:
 # Таблицы
 def generate_author(id: list[int], country: list[int]) -> str:
     data = 'INSERT INTO "Author" VALUES '
-    for i in range(10000):  # генерация ФИО, страны, даты рождения, даты смерти соответственно
+    if not id:
+        id = [0]
+    for i in range(1, 10001):  # генерация ФИО, страны, даты рождения, даты смерти соответственно
         birth_year = random.randrange(1700, 1920)
-        data = data + f'({id[0]+i+1}, \'{random.choice(lastname)}\', \'{random.choice(firstname)}\', \'{random.choice(second_name)}\', ' \
+        data = data + f'({id[0] + i}, \'{random.choice(lastname)} {random.choice(firstname)} {random.choice(second_name)}\', ' \
                       f'\'{random.randrange(1, country[0])}\', ' \
                       f'\'{random.randrange(10, 28)}.0{random.randrange(1, 9)}.{birth_year}\', ' \
                       f'\'{random.randrange(10, 28)}.0{random.randrange(1, 9)}.{birth_year + random.randrange(60, 100)}\')'
-        if i != 9999:
+        if i < 10000:
             data = data + ', '
     return data
 
 
 def generate_shop(id: list[int], dist: list[int], prop: list[int]) -> str:
     data = 'INSERT INTO "Shop" VALUES '
-    for i in range(10000):  # генерация номера магазина, района, типа собственности, года открытия соответственно
-        data = data + f'({id[0] + i + 1}, \'{random.randrange(1, 9999)}\', \'{random.randrange(1, dist[0])}\', ' \
-                      f'\'{random.randrange(1, prop[0])}\', ' \
+    if not id:
+        id = [0]
+    for i in range(1, 10001):  # генерация номера магазина, района, типа собственности, года открытия соответственно
+        data = data + f'({id[0] + i}, \'{random.randrange(1, 9999)}\', {random.randrange(1, dist[0])}, ' \
+                      f'{random.randrange(1, prop[0])}, ' \
                       f'{random.randrange(1980, 2022)})'
-        if i != 9999:
+        if i < 10000:
             data = data + ', '
     return data
 
 
 def generate_book(id: list[int], lang: list[int], author: list[int], publish: list[int]) -> str:
     data = 'INSERT INTO "Book" VALUES '
-    for i in range(10000):  # генерация названия, года издания, языка, автора, издательства соответственно
-        data = data + f'({id[0] + i + 1}, \'{random.choice(book_name)}\', \'{random.randrange(1980, 2023)}\', \'{random.randrange(1, lang[0])}\', ' \
-                      f'\'{random.randrange(1, author[0])}\', {random.randrange(1, publish[0])})'
-        if i != 9999:
+    if not id:
+        id = [0]
+    for i in range(1, 10001):  # генерация названия, года издания, языка, автора, издательства соответственно
+        data = data + f'({id[0] + i}, \'{random.choice(book_name)}\', \'{random.randrange(1980, 2023)}\', {random.randrange(1, lang[0])}, ' \
+                      f'{random.randrange(1, author[0])}, {random.randrange(1, publish[0])})'
+        if i < 10000:
             data = data + ', '
     return data
 
 
 def generate_publish(id: list[int], city: list[int]) -> str:
     data = 'INSERT INTO "Publish" VALUES '
-    for i in range(10000):  # генерация города, года создания, телефона соответственно
-        data = data + f'({id[0] + i + 1}, \'{random.randrange(1, city[0])}\', \'{random.randrange(1980, 2023)}\', ' \
+    if not id:
+        id = [0]
+    for i in range(1, 10001):  # генерация города, года создания, телефона соответственно
+        data = data + f'({id[0] + i}, \'{random.randrange(1, city[0])}\', \'{random.randrange(1980, 2023)}\', ' \
                       f'\'+7 (949) {random.randrange(100, 999)}-{random.randrange(10, 99)}-{random.randrange(10, 99)}\')'
-        if i != 9999:
+        if i < 10000:
             data = data + ', '
     return data
 
 
 def generate_book_in_shop(id: list[int], book: list[int], shop: list[int]) -> str:
     data = 'INSERT INTO "Book_in_shop" VALUES '
-    for i in range(10000):  # генерация книги, магазина, цены за экземпляр, кол-ва экземпляров, даты поставки соответственно
-        data = data + f'({id[0] + i + 1}, \'{random.randrange(1, book[0])}\', \'{random.randrange(1, shop[0])}\', \'{random.randrange(300, 3000)}\', \'{random.randrange(1, 1000)}\', {random.randrange(10, 28)}.0{random.randrange(1, 9)}.{random.randrange(2020, 2023)})'
-        if i != 9999:
+    if not id:
+        id = [0]
+    for i in range(1, 10001):  # генерация книги, магазина, цены за экземпляр, кол-ва экземпляров, даты поставки соответственно
+        data = data + f'({id[0] + i}, \'{random.randrange(1, book[0])}\', \'{random.randrange(1, shop[0])}\', \'{random.randrange(300, 3000)}\', \'{random.randrange(1, 1000)}\', {random.randrange(10, 28)}.0{random.randrange(1, 9)}.{random.randrange(2020, 2023)})'
+        if i < 10000:
             data = data + ', '
     return data
