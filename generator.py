@@ -21,57 +21,52 @@ lang = ('Китайский', 'Арабский', 'Хинди', 'Английс�
 
 # Таблицы-справочники
 def generate_dist(id: list[int]) -> str:
+    """Генерация района"""
     data = 'INSERT INTO "District" VALUES '
     if not id:
         id = [0]
-    for i in range(1, 11):  # генерация района
-        data = data + f'({id[0] + i}, \'{random.choice(dist)}\')'
-        if i < 10:
-            data = data + ', '
+    data = data + f'({id[0] + 1}, \'{random.choice(dist)}\')'
+    data += ' ON CONFLICT (name) DO NOTHING'  # игнорировать ошибки уникальности
     return data
 
 
 def generate_city(id: list[int]) -> str:
+    """Генерация города"""
     data = 'INSERT INTO "City" VALUES '
     if not id:
         id = [0]
-    for i in range(1, 11):  # генерация города
-        data = data + f'({id[0] + i}, \'{random.choice(cities)}\')'
-        if i < 10:
-            data = data + ', '
+    data = data + f'({id[0] + 1}, \'{random.choice(cities)}\')'
+    data += ' ON CONFLICT (name) DO NOTHING'  # игнорировать ошибки уникальности
     return data
 
 
 def generate_country(id: list[int]) -> str:
+    """Генерация страны"""
     data = 'INSERT INTO "Country" VALUES '
     if not id:
         id = [0]
-    for i in range(1, 11):  # генерация страны
-        data = data + f'({id[0] + i}, \'{random.choice(countries)}\')'
-        if i < 10:
-            data = data + ', '
+    data = data + f'({id[0] + 1}, \'{random.choice(countries)}\')'
+    data += ' ON CONFLICT (name) DO NOTHING'  # игнорировать ошибки уникальности
     return data
 
 
 def generate_prop(id: list[int]) -> str:
+    """Генерация типа собственности"""
     data = 'INSERT INTO "Property_type" VALUES '
     if not id:
         id = [0]
-    for i in range(1, 11):  # генерация типа собственности
-        data = data + f'({id[0] + i}, \'{random.choice(prop)}\')'
-        if i < 10:
-            data = data + ', '
+    data = data + f'({id[0] + 1}, \'{random.choice(prop)}\')'
+    data += ' ON CONFLICT (name) DO NOTHING'  # игнорировать ошибки уникальности
     return data
 
 
 def generate_language(id: list[int]) -> str:
+    """Генерация языка"""
     data = 'INSERT INTO "Language" VALUES '
     if not id:
         id = [0]
-    for i in range(1, 11):  # генерация языка
-        data = data + f'({id[0] + i}, \'{random.choice(lang)}\')'
-        if i < 10:
-            data = data + ', '
+    data = data + f'({id[0] + 1}, \'{random.choice(lang)}\')'
+    data += ' ON CONFLICT (name) DO NOTHING'  # игнорировать ошибки уникальности
     return data
 
 
@@ -136,4 +131,35 @@ def generate_book_in_shop(id: list[int], book: list[int], shop: list[int]) -> st
         data = data + f'({id[0] + i}, \'{random.randrange(1, book[0])}\', \'{random.randrange(1, shop[0])}\', \'{random.randrange(300, 3000)}\', \'{random.randrange(1, 1000)}\', {random.randrange(10, 28)}.0{random.randrange(1, 9)}.{random.randrange(2020, 2023)})'
         if i < 10000:
             data = data + ', '
+    return data
+
+
+def generate_json():
+    data = f'INSERT INTO book_shop_json (data) VALUES (\'{{' \
+        f'"shop": {{' \
+            f'"number": {random.randrange(1, 9999)},' \
+            f'"year_opened": {random.randrange(1980, 2022)},' \
+            f'"district": {{' \
+                f'"name": "{random.choice(dist)}"}},' \
+            f'"property_type": {{' \
+                f'"name": "{random.choice(prop)}"}}}},' \
+        f'"book": {{' \
+            f'"name": "{random.choice(book_name)}",' \
+            f'"year": {random.randrange(1980, 2023)},' \
+            f'"language": {{' \
+                f'"name": "{random.choice(lang)}"}},' \
+            f'"author": {{' \
+                f'"name": "{random.choice(lastname)} {random.choice(firstname)} {random.choice(second_name)}",' \
+                f'"country": {{' \
+                    f'"name": "{random.choice(countries)}"}},' \
+            f'"birth_date": "{random.randrange(10, 28)}.0{random.randrange(1, 9)}.{random.randrange(1700, 1920)}",' \
+            f'"death_date": "{random.randrange(10, 28)}.0{random.randrange(1, 9)}.{random.randrange(1700, 1920) + random.randrange(60, 100)}"}},' \
+        f'"publish": {{' \
+            f'"city": {{' \
+                f'"name": "{random.choice(cities)}"}},' \
+            f'"year_opened": {random.randrange(1980, 2023)},' \
+            f'"phone": "+7 (949) {random.randrange(100, 999)}-{random.randrange(10, 99)}-{random.randrange(10, 99)}"}}}},' \
+        f'"cost": {random.randrange(300, 3000)},' \
+        f'"amont": {random.randrange(1, 1000)},' \
+        f'"delivery_date": "{random.randrange(10, 28)}.0{random.randrange(1, 9)}.{random.randrange(2020, 2023)}"}}\');'
     return data

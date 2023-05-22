@@ -1,8 +1,39 @@
 import sys
-import connection
+import psycopg2
+
 import generator
-from PyQt5.QtWidgets import QApplication, QMainWindow, QDialog, QTableWidgetItem
-from UIclass import main_window
+from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
+from UIclass import main_window, LoginScreen
+
+
+class AuthWindow(QMainWindow, LoginScreen.Ui_Auth):
+    def __init__(self):
+        super(AuthWindow, self).__init__()
+        self.setupUi(self)
+        self.login.clicked.connect(self.to_login)
+        self.sign_up.clicked.connect(self.to_sign_up)
+
+    def to_login(self):
+        try:
+            self.user = self.loginfield.text()
+            self.password = self.passwordfield.text()
+            self.connection = psycopg2.connect(
+                host='localhost',
+                database='Bookshop',
+                user=self.user,
+                password=self.password
+            )
+            self.cursor = self.connection.cursor()
+            self.menu = MainMenu(self.connection, self.cursor)  # передаем connection и cursor
+            self.menu.show()
+            self.close()
+
+        except Exception as err:
+            print(err)
+            self.error.setText('Проверьте ввод')
+
+    def to_sign_up(self):
+        ...
 
 
 class PrintTable(QMainWindow):
@@ -26,81 +57,61 @@ class PrintTable(QMainWindow):
         self.tableWidget.resizeColumnsToContents()
 
     def to_print_city(self):
-        query = 'SELECT name FROM "City"' \
-                'ORDER BY id'
+        query = 'SELECT * FROM "City_view"'
         self.labels = ['Город']
         self.to_print_table(query)
 
     def to_print_dist(self):
-        query = 'SELECT name FROM "District"' \
-                'ORDER BY id'
+        query = 'SELECT * FROM "District_view"'
         self.labels = ['Район']
         self.to_print_table(query)
 
     def to_print_lang(self):
-        query = 'SELECT name FROM "Language"' \
-                'ORDER BY id'
+        query = 'SELECT * FROM "Language_view"'
         self.labels = ['Язык']
         self.to_print_table(query)
 
     def to_print_prop(self):
-        query = 'SELECT name FROM "Property_type"' \
-                'ORDER BY id'
+        query = 'SELECT * FROM "Property_type_view"'
         self.labels = ['Тип собственности']
         self.to_print_table(query)
 
     def to_print_country(self):
-        query = 'SELECT name FROM "Country"' \
-                'ORDER BY id'
+        query = 'SELECT * FROM "Country_view"'
         self.labels = ['Страна']
         self.to_print_table(query)
 
     def to_print_book(self):
-        query = 'SELECT "Book".name, year, "Language".name, "Author".name, "Publish".phone FROM "Book" ' \
-                'LEFT JOIN "Language" ON "Language".id = "Book".language ' \
-                'LEFT JOIN "Author" ON "Author".id = "Book".author ' \
-                'LEFT JOIN "Publish" ON "Publish".id = "Book".publish ' \
-                'ORDER BY "Book".id'
+        query = 'SELECT * FROM "Book_view"'
         self.labels = ['Название книги', 'Год выпуска', 'Язык', 'Издательство', 'Тип собственности']
         self.to_print_table(query)
 
     def to_print_author(self):
-        query = 'SELECT "Author".name, "Country".name, birth_date, death_date FROM "Author" ' \
-                'LEFT JOIN "Country" ON "Country".id = "Author".country ' \
-                'ORDER BY "Author".id'
+        query = 'SELECT * FROM "Author_view"'
         self.labels = ['ФИО', 'Страна', 'Дата рождения', 'Дата смерти']
         self.to_print_table(query)
 
     def to_print_book_in_shop(self):
-        query = 'SELECT "Book".name, "Shop".number, cost, amount, delivery_date FROM "Book_in_shop" ' \
-                'LEFT JOIN "Book" ON "Book".id = "Book_in_shop".book_id ' \
-                'LEFT JOIN "Shop" ON "Shop".id = "Book_in_shop".shop_id ' \
-                'ORDER BY "Book_in_shop".shop_id'
+        query = 'SELECT * FROM "Book_in_shop_view"'
         self.labels = ['Название книги', 'Номер магазина', 'Цена за экземпляр', 'Количество экземпляров', 'Дата поставки']
         self.to_print_table(query)
 
     def to_print_publish(self):
-        query = 'SELECT "City".name, year_opened, phone FROM "Publish" ' \
-                'LEFT JOIN "City" ON "City".id = "Publish".city ' \
-                'ORDER BY "Publish".id'
+        query = 'SELECT * FROM "Publish_view"'
         self.labels = ['Город', 'Год открытия', 'Телефон']
         self.to_print_table(query)
 
     def to_print_shop(self):
-        query = 'SELECT number, "District".name, "Property_type".name, year_opened FROM "Shop" ' \
-                'LEFT JOIN "District" ON "District".id = "Shop".district ' \
-                'LEFT JOIN "Property_type" ON "Property_type".id = "Shop".property_type ' \
-                'ORDER BY "Shop".id'
+        query = 'SELECT * FROM "Shop_view"'
         self.labels = ['Номер магазина', 'Район', 'Тип собственности', 'Год открытия']
         self.to_print_table(query)
 
 
 class MainMenu(PrintTable, main_window.Ui_MainWindow):
-    def __init__(self):
+    def __init__(self, connection, cursor):
         super(MainMenu, self).__init__()
         self.setupUi(self)
-        self.setFixedSize(860, 725)
-        self.cursor = connection.connection.cursor()
+        self.setFixedSize(860, 640)
         self.Print_book.clicked.connect(self.to_print_book)
         self.Print_city.clicked.connect(self.to_print_city)
         self.Print_dist.clicked.connect(self.to_print_dist)
@@ -112,19 +123,31 @@ class MainMenu(PrintTable, main_window.Ui_MainWindow):
         self.Print_publish.clicked.connect(self.to_print_publish)
         self.Print_shop.clicked.connect(self.to_print_shop)
         self.Gen_button.clicked.connect(self.to_generate_all)
+        self.connection = connection
+        self.cursor = cursor
 
     def to_generate_all(self):
+        """Генерация для таблиц"""
         try:
-            self.to_generate_language()
-            self.to_generate_city()
-            self.to_generate_dist()
-            self.to_generate_prop()
-            self.to_generate_country()
+            for i in range(10):
+                self.to_generate_dist()
+                self.to_generate_language()
+                self.to_generate_city()
+                self.to_generate_prop()
+                self.to_generate_country()
             self.to_generate_author()
             self.to_generate_publish()
             self.to_generate_book()
             self.to_generate_shop()
-            self.to_generate_book_in_shop()
+            #self.to_generate_book_in_shop()
+        except Exception as err:
+            print(err)
+
+
+        """Генерация для JSON"""
+        try:
+            for i in range(10000):
+                self.to_generate_json()
         except Exception as err:
             print(err)
 
@@ -134,7 +157,7 @@ class MainMenu(PrintTable, main_window.Ui_MainWindow):
             return self.cursor.fetchone()
         elif query.startswith('I'):  # INSERT
             self.cursor.execute(query)
-            connection.connection.commit()
+            self.connection.commit()
             print('Генерация завершена')
 
     def to_generate_dist(self):
@@ -215,10 +238,14 @@ class MainMenu(PrintTable, main_window.Ui_MainWindow):
         query = generator.generate_book_in_shop(self.id, self.book, self.shop)
         self.to_generate(query)
 
+    def to_generate_json(self):
+        query = generator.generate_json()
+        self.to_generate(query)
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = MainMenu()
+    window = AuthWindow()
 
     window.show()
     sys.exit(app.exec_())
