@@ -3,8 +3,8 @@ import psycopg2
 import generator
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
 
-from AddClasses import AddBook, AddAuthor
-from UIclass import main_window, LoginScreen, publish_manager
+from AddClasses import AddBook, AddAuthor, AddBookInShop
+from UIclass import main_window, LoginScreen, publish_manager, shop_manager
 
 
 class AuthWindow(QMainWindow, LoginScreen.Ui_Auth):
@@ -37,7 +37,7 @@ class AuthWindow(QMainWindow, LoginScreen.Ui_Auth):
                 self.publish_menu = PublishMenu(self.connection, self.cursor, self.current_user, self.role_group)
                 self.publish_menu.show()
             elif self.role_group == 'shop_manager':
-                self.shop_menu = MainMenu(self.connection, self.cursor, self.current_user, self.role_group)
+                self.shop_menu = ShopMenu(self.connection, self.cursor, self.current_user, self.role_group)
                 self.shop_menu.show()
             else:
                 self.error.setText('Неизвестная роль')
@@ -261,6 +261,7 @@ class PublishMenu(QMainWindow, publish_manager.Ui_Dialog):
     def __init__(self, connection, cursor, current_user, role_group):
         super(PublishMenu, self).__init__()
         self.setupUi(self)
+
         self.connection = connection
         self.cursor = cursor
         self.current_user = current_user
@@ -278,11 +279,11 @@ class PublishMenu(QMainWindow, publish_manager.Ui_Dialog):
         ...
 
     def to_add_book(self):
-        book = AddBook(self.connection, self.cursor, self.current_user, self.role_group)
+        book = AddBook(self.connection, self.cursor, self.current_user)
         book.exec_()
 
     def to_add_author(self):
-        author = AddAuthor(self.connection, self.cursor, self.current_user, self.role_group)
+        author = AddAuthor(self.connection, self.cursor, self.current_user)
         author.exec_()
 
     def to_print_book(self):
@@ -320,6 +321,29 @@ class PublishMenu(QMainWindow, publish_manager.Ui_Dialog):
             i += 1
         i = 0
         self.tableWidget_2.resizeColumnsToContents()
+
+
+class ShopMenu(PrintTable, shop_manager.Ui_Dialog):
+    def __init__(self, connection, cursor, current_user, role_group):
+        super(ShopMenu, self).__init__()
+        self.setupUi(self)
+        self.setFixedSize(550, 320)
+        self.connection = connection
+        self.cursor = cursor
+        self.current_user = current_user
+        self.role_group = role_group
+        self.departament = 126
+        self.label_2.setText(f'Вы вошли как: {current_user}, Номер заведения: {self.departament}')
+        self.Update_book.clicked.connect(self.to_print_book_in_shop)
+        self.Add_book_in_shop.clicked.connect(self.to_add_book_in_shop)
+        self.Update_book.clicked.connect(self.to_delete_book_in_shop)
+
+    def to_delete_book_in_shop(self):
+        ...
+
+    def to_add_book_in_shop(self):
+        book_in_shop = AddBookInShop(self.connection, self.cursor, self.current_user, self.departament)
+        book_in_shop.exec_()
 
 
 if __name__ == '__main__':
