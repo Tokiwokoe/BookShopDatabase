@@ -105,12 +105,12 @@ class Ui_MainWindow(object):
 "font: \"Yu Gothic UI Semibold\";\n"
 "background-color: rgb(245, 245, 245)")
         self.Print_book_in_shop.setObjectName("Print_book_in_shop")
-        self.Gen_button = QtWidgets.QPushButton(self.centralwidget)
-        self.Gen_button.setGeometry(QtCore.QRect(470, 490, 351, 40))
-        self.Gen_button.setStyleSheet("font-size: 16px;\n"
+        self.Workers_button = QtWidgets.QPushButton(self.centralwidget)
+        self.Workers_button.setGeometry(QtCore.QRect(470, 490, 351, 40))
+        self.Workers_button.setStyleSheet("font-size: 16px;\n"
 "font: \"Yu Gothic UI Semibold\";\n"
 "background-color: rgb(245, 245, 245)")
-        self.Gen_button.setObjectName("Gen_button")
+        self.Workers_button.setObjectName("Workers_button")
         self.Queries_button = QtWidgets.QPushButton(self.centralwidget)
         self.Queries_button.setGeometry(QtCore.QRect(470, 540, 351, 40))
         self.Queries_button.setStyleSheet("font-size: 16px;\n"
@@ -144,7 +144,7 @@ class Ui_MainWindow(object):
         self.Print_publish.setText(_translate("MainWindow", "Издательства"))
         self.Change_button.setText(_translate("MainWindow", "Добавить изменения"))
         self.Print_book_in_shop.setText(_translate("MainWindow", "Книги в магазинах"))
-        self.Gen_button.setText(_translate("MainWindow", "Сгенерировать данные"))
+        self.Workers_button.setText(_translate("MainWindow", "Редактировать пользователей"))
         self.Queries_button.setText(_translate("MainWindow", "Перейти в режим запросов"))
 
 

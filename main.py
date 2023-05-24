@@ -3,8 +3,8 @@ import psycopg2
 import generator
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
 
-from AddClasses import AddBook, AddAuthor, AddBookInShop
-from UIclass import main_window, LoginScreen, publish_manager, shop_manager
+from AddClasses import AddBook, AddAuthor, AddBookInShop, AddPm, AddSm
+from UIclass import main_window, LoginScreen, publish_manager, shop_manager, admin
 
 
 class AuthWindow(QMainWindow, LoginScreen.Ui_Auth):
@@ -31,13 +31,17 @@ class AuthWindow(QMainWindow, LoginScreen.Ui_Auth):
             self.role_group = self.cursor.fetchone()[0]
             print(f'{self.current_user} из группы {self.role_group} вошёл в систему')
             if self.role_group == 'admins':
-                self.admin_menu = MainMenu(self.connection, self.cursor, self.current_user, self.role_group)
+                self.admin_menu = MainMenu(self.connection, self.cursor, self.current_user)
                 self.admin_menu.show()
             elif self.role_group == 'publish_manager':
-                self.publish_menu = PublishMenu(self.connection, self.cursor, self.current_user, self.role_group)
+                self.cursor.execute(f"SELECT departament FROM \"Publish_manager\" WHERE login = '{self.user}'")
+                self.departament = self.cursor.fetchone()[0]
+                self.publish_menu = PublishMenu(self.connection, self.cursor, self.current_user, self.departament)
                 self.publish_menu.show()
             elif self.role_group == 'shop_manager':
-                self.shop_menu = ShopMenu(self.connection, self.cursor, self.current_user, self.role_group)
+                self.cursor.execute(f"SELECT departament FROM \"Shop_manager\" WHERE login = '{self.user}'")
+                self.departament = self.cursor.fetchone()[0]
+                self.shop_menu = ShopMenu(self.connection, self.cursor, self.current_user, self.departament)
                 self.shop_menu.show()
             else:
                 self.error.setText('Неизвестная роль')
@@ -121,9 +125,14 @@ class PrintTable(QMainWindow):
         self.labels = ['Номер магазина', 'Район', 'Тип собственности', 'Год открытия']
         self.to_print_table(query)
 
+    def to_print_sm(self):
+        query = 'SELECT login, departament FROM "Shop_manager" ORDER BY id'
+        self.labels = ['Логин', 'Заведение']
+        self.to_print_table(query)
+
 
 class MainMenu(PrintTable, main_window.Ui_MainWindow):
-    def __init__(self, connection, cursor, current_user, role_group):
+    def __init__(self, connection, cursor, current_user):
         super(MainMenu, self).__init__()
         self.setupUi(self)
         self.setFixedSize(860, 640)
@@ -137,136 +146,25 @@ class MainMenu(PrintTable, main_window.Ui_MainWindow):
         self.Print_country.clicked.connect(self.to_print_country)
         self.Print_publish.clicked.connect(self.to_print_publish)
         self.Print_shop.clicked.connect(self.to_print_shop)
-        self.Gen_button.clicked.connect(self.to_generate_all)
-        self.connection = connection
-        self.cursor = cursor
-
-    def to_generate_all(self):
-        """Генерация для таблиц"""
-        try:
-            """for i in range(10):
-                self.to_generate_dist()
-                self.to_generate_language()
-                self.to_generate_city()
-                self.to_generate_prop()
-                self.to_generate_country()
-            self.to_generate_author()
-            self.to_generate_publish()
-            self.to_generate_book()
-            self.to_generate_shop()"""
-            for i in range(1, 10001):
-                self.to_generate_book_in_shop()
-        except psycopg2.Error as err:
-            print(err)
-
-
-        """Генерация для JSON"""
-        """try:
-            for i in range(10000):
-                self.to_generate_json()
-        except Exception as err:
-            print(err)"""
-
-    def to_generate(self, query):
-        if query.startswith('S'):  # SELECT
-            self.cursor.execute(query)
-            return self.cursor.fetchone()
-        elif query.startswith('I'):  # INSERT
-            self.cursor.execute(query)
-            self.connection.commit()
-            print('Генерация завершена')
-
-    def to_generate_dist(self):
-        query = 'SELECT id FROM "District" ORDER BY id DESC LIMIT 1'
-        self.id = self.to_generate(query)
-        query = generator.generate_dist(self.id)
-        self.to_generate(query)
-
-    def to_generate_city(self):
-        query = 'SELECT id FROM "City" ORDER BY id DESC LIMIT 1'
-        self.id = self.to_generate(query)
-        query = generator.generate_city(self.id)
-        self.to_generate(query)
-
-    def to_generate_country(self):
-        query = 'SELECT id FROM "Country" ORDER BY id DESC LIMIT 1'
-        self.id = self.to_generate(query)
-        query = generator.generate_country(self.id)
-        self.to_generate(query)
-
-    def to_generate_prop(self):
-        query = 'SELECT id FROM "Property_type" ORDER BY id DESC LIMIT 1'
-        self.id = self.to_generate(query)
-        query = generator.generate_prop(self.id)
-        self.to_generate(query)
-
-    def to_generate_language(self):
-        query = 'SELECT id FROM "Language" ORDER BY id DESC LIMIT 1'
-        self.id = self.to_generate(query)
-        query = generator.generate_language(self.id)
-        self.to_generate(query)
-
-    def to_generate_author(self):
-        query = 'SELECT id FROM "Author" ORDER BY id DESC LIMIT 1'
-        self.id = self.to_generate(query)
-        query = 'SELECT id FROM "Country" ORDER BY id DESC LIMIT 1'
-        self.country = self.to_generate(query)
-        query = generator.generate_author(self.id, self.country)
-        self.to_generate(query)
-
-    def to_generate_shop(self):
-        query = 'SELECT id FROM "Shop" ORDER BY id DESC LIMIT 1'
-        self.id = self.to_generate(query)
-        query = 'SELECT id FROM "District" ORDER BY id DESC LIMIT 1'
-        self.dist = self.to_generate(query)
-        query = 'SELECT id FROM "Property_type" ORDER BY id DESC LIMIT 1'
-        self.prop = self.to_generate(query)
-        query = generator.generate_shop(self.id, self.dist, self.prop)
-        self.to_generate(query)
-
-    def to_generate_book(self):
-        query = 'SELECT id FROM "Book" ORDER BY id DESC LIMIT 1'
-        self.id = self.to_generate(query)
-        query = 'SELECT id FROM "Language" ORDER BY id DESC LIMIT 1'
-        self.lang = self.to_generate(query)
-        query = 'SELECT id FROM "Author" ORDER BY id DESC LIMIT 1'
-        self.author = self.to_generate(query)
-        query = 'SELECT id FROM "Publish" ORDER BY id DESC LIMIT 1'
-        self.publish = self.to_generate(query)
-        query = generator.generate_book(self.id, self.lang, self.author, self.publish)
-        self.to_generate(query)
-
-    def to_generate_publish(self):
-        query = 'SELECT id FROM "Publish" ORDER BY id DESC LIMIT 1'
-        self.id = self.to_generate(query)
-        query = 'SELECT id FROM "City" ORDER BY id DESC LIMIT 1'
-        self.city = self.to_generate(query)
-        query = generator.generate_publish(self.id, self.city)
-        self.to_generate(query)
-
-    def to_generate_book_in_shop(self):
-        query = 'SELECT id FROM "Book" ORDER BY id DESC LIMIT 1'
-        self.book = self.to_generate(query)
-        query = 'SELECT id FROM "Shop" ORDER BY id DESC LIMIT 1'
-        self.shop = self.to_generate(query)
-        query = generator.generate_book_in_shop(self.book, self.shop)
-        self.to_generate(query)
-
-    def to_generate_json(self):
-        query = generator.generate_json()
-        self.to_generate(query)
-
-
-class PublishMenu(QMainWindow, publish_manager.Ui_Dialog):
-    def __init__(self, connection, cursor, current_user, role_group):
-        super(PublishMenu, self).__init__()
-        self.setupUi(self)
-
+        self.Workers_button.clicked.connect(self.to_add_worker)
         self.connection = connection
         self.cursor = cursor
         self.current_user = current_user
-        self.role_group = role_group
-        self.auth_as.setText(f'Вы вошли как: {current_user}, Номер заведения: 32')
+
+    def to_add_worker(self):
+        self.worker = AddWorker(self.connection, self.cursor, self.current_user)
+        self.worker.show()
+
+
+class PublishMenu(QMainWindow, publish_manager.Ui_Dialog):
+    def __init__(self, connection, cursor, current_user, departament):
+        super(PublishMenu, self).__init__()
+        self.setupUi(self)
+        self.connection = connection
+        self.cursor = cursor
+        self.current_user = current_user
+        self.departament = departament
+        self.auth_as.setText(f'Вы вошли как: {current_user}, Номер заведения: {self.departament}')
         self.Update_book.clicked.connect(self.to_print_book)
         self.Update_author.clicked.connect(self.to_print_author)
         self.Add_book.clicked.connect(self.to_add_book)
@@ -279,7 +177,7 @@ class PublishMenu(QMainWindow, publish_manager.Ui_Dialog):
         ...
 
     def to_add_book(self):
-        book = AddBook(self.connection, self.cursor, self.current_user)
+        book = AddBook(self.connection, self.cursor, self.current_user, self.departament)
         book.exec_()
 
     def to_add_author(self):
@@ -287,7 +185,7 @@ class PublishMenu(QMainWindow, publish_manager.Ui_Dialog):
         author.exec_()
 
     def to_print_book(self):
-        query = 'SELECT * FROM "Book_view"'
+        query = f'SELECT "Book".name AS book, "Book".year, "Language".name AS language, "Author".name AS author FROM "Book" LEFT JOIN "Language" ON "Language".id = "Book".language LEFT JOIN "Author" ON "Author".id = "Book".author LEFT JOIN "Publish" ON "Publish".id = "Book".publish WHERE "Publish".id = {self.departament} ORDER BY "Book".id'
         self.labels = ['Название книги', 'Год выпуска', 'Язык', 'Издательство', 'Номер телефона']
         self.cursor.execute(query)
         self.rows = self.cursor.fetchall()
@@ -323,20 +221,37 @@ class PublishMenu(QMainWindow, publish_manager.Ui_Dialog):
         self.tableWidget_2.resizeColumnsToContents()
 
 
-class ShopMenu(PrintTable, shop_manager.Ui_Dialog):
-    def __init__(self, connection, cursor, current_user, role_group):
+class ShopMenu(QMainWindow, shop_manager.Ui_Dialog):
+    def __init__(self, connection, cursor, current_user, departament):
         super(ShopMenu, self).__init__()
         self.setupUi(self)
         self.setFixedSize(550, 320)
         self.connection = connection
         self.cursor = cursor
         self.current_user = current_user
-        self.role_group = role_group
-        self.departament = 126
+        self.departament = departament
         self.label_2.setText(f'Вы вошли как: {current_user}, Номер заведения: {self.departament}')
         self.Update_book.clicked.connect(self.to_print_book_in_shop)
         self.Add_book_in_shop.clicked.connect(self.to_add_book_in_shop)
         self.Update_book.clicked.connect(self.to_delete_book_in_shop)
+
+    def to_print_book_in_shop(self):
+        query = f'SELECT "Book".name, "Book_in_shop".cost, "Book_in_shop".amount, "Book_in_shop".delivery_date FROM "Book_in_shop" LEFT JOIN "Book" ON "Book".id = "Book_in_shop".book_id LEFT JOIN "Shop" ON "Shop".id = "Book_in_shop".shop_id WHERE "Shop".id = {self.departament}'
+        self.labels = ['Книга', 'Цена', 'Количество', 'Дата поставки']
+        self.cursor.execute(query)
+        self.rows = self.cursor.fetchall()
+        self.tableWidget.setRowCount(len(self.rows))
+        self.tableWidget.setColumnCount(len(self.labels))
+        self.tableWidget.setHorizontalHeaderLabels(self.labels)
+        i = 0
+        for elem in self.rows:
+            j = 0
+            for t in elem:
+                self.tableWidget.setItem(i, j, QTableWidgetItem(str(t).strip()))
+                j += 1
+            i += 1
+        i = 0
+        self.tableWidget.resizeColumnsToContents()
 
     def to_delete_book_in_shop(self):
         ...
@@ -344,6 +259,47 @@ class ShopMenu(PrintTable, shop_manager.Ui_Dialog):
     def to_add_book_in_shop(self):
         book_in_shop = AddBookInShop(self.connection, self.cursor, self.current_user, self.departament)
         book_in_shop.exec_()
+
+
+class AddWorker(PrintTable, admin.Ui_Dialog):
+    def __init__(self, connection, cursor, current_user):
+        super(AddWorker, self).__init__()
+        self.setupUi(self)
+        self.setFixedSize(1100, 350)
+        self.connection = connection
+        self.cursor = cursor
+        self.current_user = current_user
+        self.label_2.setText(f'Вы вошли как: {current_user}')
+        self.Update_shop.clicked.connect(self.to_print_sm)
+        self.Update_pub.clicked.connect(self.to_print_pm)
+        self.to_add_pub.clicked.connect(self.add_pm)
+        self.to_add_shop.clicked.connect(self.add_sm)
+
+    def to_print_pm(self):
+        query = 'SELECT login, departament FROM "Publish_manager" ORDER BY id'
+        self.labels = ['Логин', 'Заведение']
+        self.cursor.execute(query)
+        self.rows = self.cursor.fetchall()
+        self.tableWidget_2.setRowCount(len(self.rows))
+        self.tableWidget_2.setColumnCount(len(self.labels))
+        self.tableWidget_2.setHorizontalHeaderLabels(self.labels)
+        i = 0
+        for elem in self.rows:
+            j = 0
+            for t in elem:
+                self.tableWidget_2.setItem(i, j, QTableWidgetItem(str(t).strip()))
+                j += 1
+            i += 1
+        i = 0
+        self.tableWidget_2.resizeColumnsToContents()
+
+    def add_pm(self):
+        pm = AddPm(self.connection, self.cursor)
+        pm.exec_()
+
+    def add_sm(self):
+        sm = AddSm(self.connection, self.cursor)
+        sm.exec_()
 
 
 if __name__ == '__main__':

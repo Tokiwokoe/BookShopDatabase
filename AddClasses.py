@@ -1,17 +1,18 @@
 import datetime
 
 from PyQt5.QtWidgets import QDialog
-from UIclass import add_book, add_author, add_book_in_shop
+from UIclass import add_book, add_author, add_book_in_shop, add_pm, add_sm
 
 
 class AddBook(QDialog, add_book.Ui_Dialog):
-    def __init__(self, connection, cursor, current_user):
+    def __init__(self, connection, cursor, current_user, departament):
         super(AddBook, self).__init__()
         self.setupUi(self)
         self.setFixedSize(650, 320)
         self.connection = connection
         self.cursor = cursor
         self.current_user = current_user
+        self.departament = departament
         self.Add.clicked.connect(self.correct_data)
         query = 'SELECT id, name FROM "Language"'
         self.cursor.execute(query)
@@ -21,26 +22,20 @@ class AddBook(QDialog, add_book.Ui_Dialog):
         self.cursor.execute(query)
         for t in self.cursor.fetchall():
             self.author.addItem(str(t))
-        query = 'SELECT "Publish".id, "City".name, phone FROM "Publish" LEFT JOIN "City" ON "City".id = "Publish".city'
-        self.cursor.execute(query)
-        for t in self.cursor.fetchall():
-            self.publish.addItem(str(t))
 
     def correct_data(self):
         name = self.name.text().strip()
         year = self.year.text()
         lang = self.lang.currentText().replace('(', '').replace(')', '').replace(' \'', '\'').split(',')
         author = self.author.currentText().replace('(', '').replace(')', '').replace(' \'', '\'').split(',')
-        publish = self.publish.currentText().replace('(', '').replace(')', '').replace(' \'', '\'').split(',')
         lang_id = str(lang[0])
         author_id = str(author[0])
-        publish_id = str(publish[0])
         if 2023 >= int(year) >= 1980:
             try:
                 query = 'SELECT id FROM "Book" ORDER BY id DESC LIMIT 1'
                 self.cursor.execute(query)
                 self.id = self.cursor.fetchone()
-                query = f"INSERT INTO \"Book\" VALUES({int(self.id[0]) + 1}, '{name}', {year}, {lang_id}, {author_id}, {publish_id})"
+                query = f"INSERT INTO \"Book\" VALUES({int(self.id[0]) + 1}, '{name}', {year}, {lang_id}, {author_id}, {self.departament})"
                 self.cursor.execute(query)
                 self.connection.commit()
                 self.error.setText('Успешно добавлено')
@@ -114,6 +109,58 @@ class AddBookInShop(QDialog, add_book_in_shop.Ui_Dialog):
         if int(cost) > 0 and int(amount) > 0:
             try:
                 query = f"INSERT INTO \"Book_in_shop\" VALUES({book_id}, {self.departament}, {cost}, {amount}, '{datetime.date.today()}')"
+                self.cursor.execute(query)
+                self.connection.commit()
+                self.error.setText('Успешно добавлено')
+            except Exception as err:
+                print(err)
+                self.error.setText('Что-то пошло не так :(')
+        else:
+            self.error.setText('Проверьте корректность заполнения полей!')
+
+
+class AddPm(QDialog, add_pm.Ui_Dialog):
+    def __init__(self, connection, cursor):
+        super(AddPm, self).__init__()
+        self.connection = connection
+        self.cursor = cursor
+        self.Add_button.clicked.connect(self.correct_data)
+
+    def correct_data(self):
+        login = self.log.text()
+        departament = self.dep.text()
+        if int(departament) > 0:
+            try:
+                query = 'SELECT id FROM "Publish_manager" ORDER BY id DESC LIMIT 1'
+                self.cursor.execute(query)
+                self.id = self.cursor.fetchone()
+                query = f"INSERT INTO \"Publish_manager\" VALUES({int(self.id[0]) + 1}, {login}, {departament}')"
+                self.cursor.execute(query)
+                self.connection.commit()
+                self.error.setText('Успешно добавлено')
+            except Exception as err:
+                print(err)
+                self.error.setText('Что-то пошло не так :(')
+        else:
+            self.error.setText('Проверьте корректность заполнения полей!')
+
+
+class AddSm(QDialog, add_sm.Ui_Dialog):
+    def __init__(self, connection, cursor):
+        super(AddSm, self).__init__()
+        self.connection = connection
+        self.cursor = cursor
+        self.Add_button.clicked.connect(self.correct_data)
+
+    def correct_data(self):
+        login = self.log.text()
+        departament = self.dep.text()
+        if int(departament) > 0:
+            try:
+                query = 'SELECT id FROM "Shop_manager" ORDER BY id DESC LIMIT 1'
+                self.cursor.execute(query)
+                self.id = self.cursor.fetchone()
+                query = f"INSERT INTO \"Shop_manager\" VALUES({int(self.id[0]) + 1}, {login}, {departament}')"
                 self.cursor.execute(query)
                 self.connection.commit()
                 self.error.setText('Успешно добавлено')

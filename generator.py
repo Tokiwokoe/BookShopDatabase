@@ -159,3 +159,116 @@ def generate_json():
         f'"amont": {random.randrange(1, 1000)},' \
         f'"delivery_date": "{random.randrange(10, 28)}.0{random.randrange(1, 9)}.{random.randrange(2020, 2023)}"}}\');'
     return data
+
+    """def to_generate_all(self):
+            try:
+                for i in range(10):
+                    self.to_generate_dist()
+                    self.to_generate_language()
+                    self.to_generate_city()
+                    self.to_generate_prop()
+                    self.to_generate_country()
+                self.to_generate_author()
+                self.to_generate_publish()
+                self.to_generate_book()
+                self.to_generate_shop()
+                for i in range(1, 10001):
+                    self.to_generate_book_in_shop()
+            except psycopg2.Error as err:
+                print(err)
+
+
+            try:
+                for i in range(10000):
+                    self.to_generate_json()
+            except Exception as err:
+                print(err)
+
+        def to_generate(self, query):
+            if query.startswith('S'):  # SELECT
+                self.cursor.execute(query)
+                return self.cursor.fetchone()
+            elif query.startswith('I'):  # INSERT
+                self.cursor.execute(query)
+                self.connection.commit()
+                print('Генерация завершена')
+
+        def to_generate_dist(self):
+            query = 'SELECT id FROM "District" ORDER BY id DESC LIMIT 1'
+            self.id = self.to_generate(query)
+            query = generator.generate_dist(self.id)
+            self.to_generate(query)
+
+        def to_generate_city(self):
+            query = 'SELECT id FROM "City" ORDER BY id DESC LIMIT 1'
+            self.id = self.to_generate(query)
+            query = generator.generate_city(self.id)
+            self.to_generate(query)
+
+        def to_generate_country(self):
+            query = 'SELECT id FROM "Country" ORDER BY id DESC LIMIT 1'
+            self.id = self.to_generate(query)
+            query = generator.generate_country(self.id)
+            self.to_generate(query)
+
+        def to_generate_prop(self):
+            query = 'SELECT id FROM "Property_type" ORDER BY id DESC LIMIT 1'
+            self.id = self.to_generate(query)
+            query = generator.generate_prop(self.id)
+            self.to_generate(query)
+
+        def to_generate_language(self):
+            query = 'SELECT id FROM "Language" ORDER BY id DESC LIMIT 1'
+            self.id = self.to_generate(query)
+            query = generator.generate_language(self.id)
+            self.to_generate(query)
+
+        def to_generate_author(self):
+            query = 'SELECT id FROM "Author" ORDER BY id DESC LIMIT 1'
+            self.id = self.to_generate(query)
+            query = 'SELECT id FROM "Country" ORDER BY id DESC LIMIT 1'
+            self.country = self.to_generate(query)
+            query = generator.generate_author(self.id, self.country)
+            self.to_generate(query)
+
+        def to_generate_shop(self):
+            query = 'SELECT id FROM "Shop" ORDER BY id DESC LIMIT 1'
+            self.id = self.to_generate(query)
+            query = 'SELECT id FROM "District" ORDER BY id DESC LIMIT 1'
+            self.dist = self.to_generate(query)
+            query = 'SELECT id FROM "Property_type" ORDER BY id DESC LIMIT 1'
+            self.prop = self.to_generate(query)
+            query = generator.generate_shop(self.id, self.dist, self.prop)
+            self.to_generate(query)
+
+        def to_generate_book(self):
+            query = 'SELECT id FROM "Book" ORDER BY id DESC LIMIT 1'
+            self.id = self.to_generate(query)
+            query = 'SELECT id FROM "Language" ORDER BY id DESC LIMIT 1'
+            self.lang = self.to_generate(query)
+            query = 'SELECT id FROM "Author" ORDER BY id DESC LIMIT 1'
+            self.author = self.to_generate(query)
+            query = 'SELECT id FROM "Publish" ORDER BY id DESC LIMIT 1'
+            self.publish = self.to_generate(query)
+            query = generator.generate_book(self.id, self.lang, self.author, self.publish)
+            self.to_generate(query)
+
+        def to_generate_publish(self):
+            query = 'SELECT id FROM "Publish" ORDER BY id DESC LIMIT 1'
+            self.id = self.to_generate(query)
+            query = 'SELECT id FROM "City" ORDER BY id DESC LIMIT 1'
+            self.city = self.to_generate(query)
+            query = generator.generate_publish(self.id, self.city)
+            self.to_generate(query)
+
+        def to_generate_book_in_shop(self):
+            query = 'SELECT id FROM "Book" ORDER BY id DESC LIMIT 1'
+            self.book = self.to_generate(query)
+            query = 'SELECT id FROM "Shop" ORDER BY id DESC LIMIT 1'
+            self.shop = self.to_generate(query)
+            query = generator.generate_book_in_shop(self.book, self.shop)
+            self.to_generate(query)
+
+        def to_generate_json(self):
+            query = generator.generate_json()
+            self.to_generate(query)"""

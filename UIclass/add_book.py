@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(650, 320)
+        Dialog.resize(650, 280)
         Dialog.setStyleSheet("background-color: rgb(245, 245, 175)")
         self.label_2 = QtWidgets.QLabel(Dialog)
         self.label_2.setGeometry(QtCore.QRect(10, 10, 631, 51))
@@ -84,26 +84,13 @@ class Ui_Dialog(object):
         self.label_6.setAlignment(QtCore.Qt.AlignCenter)
         self.label_6.setObjectName("label_6")
         self.Add = QtWidgets.QPushButton(Dialog)
-        self.Add.setGeometry(QtCore.QRect(550, 280, 81, 30))
+        self.Add.setGeometry(QtCore.QRect(550, 240, 81, 30))
         self.Add.setStyleSheet("font-size: 16px;\n"
 "font: \"Yu Gothic UI Semibold\";\n"
 "background-color: rgb(245, 245, 245)")
         self.Add.setObjectName("Add")
-        self.label_7 = QtWidgets.QLabel(Dialog)
-        self.label_7.setGeometry(QtCore.QRect(10, 240, 171, 20))
-        self.label_7.setStyleSheet("color: rgb(0, 0, 0);\n"
-"font-size: 16px;\n"
-"font: \"Arial Black\";")
-        self.label_7.setAlignment(QtCore.Qt.AlignCenter)
-        self.label_7.setObjectName("label_7")
-        self.publish = QtWidgets.QComboBox(Dialog)
-        self.publish.setGeometry(QtCore.QRect(220, 240, 420, 21))
-        self.publish.setStyleSheet("font-size: 16px;\n"
-"font: \"Yu Gothic UI Semibold\";\n"
-"background-color: rgb(245, 245, 245)")
-        self.publish.setObjectName("publish")
         self.error = QtWidgets.QLabel(Dialog)
-        self.error.setGeometry(QtCore.QRect(10, 280, 531, 31))
+        self.error.setGeometry(QtCore.QRect(10, 240, 531, 31))
         self.error.setStyleSheet("color: red;\n"
 "font-size: 16px;\n"
 "font: 16pt \"Franklin Gothic Demi\";")
@@ -123,7 +110,6 @@ class Ui_Dialog(object):
         self.label_5.setText(_translate("Dialog", "Автор"))
         self.label_6.setText(_translate("Dialog", "Год издания"))
         self.Add.setText(_translate("Dialog", "Добавить"))
-        self.label_7.setText(_translate("Dialog", "Издательство"))
 
 
 if __name__ == "__main__":
