@@ -123,14 +123,10 @@ def generate_publish(id: list[int], city: list[int]) -> str:
     return data
 
 
-def generate_book_in_shop(id: list[int], book: list[int], shop: list[int]) -> str:
+def generate_book_in_shop(book: list[int], shop: list[int]) -> str:
+    """Генерация книги, магазина, цены за экземпляр, кол-ва экземпляров, даты поставки соответственно"""
     data = 'INSERT INTO "Book_in_shop" VALUES '
-    if not id:
-        id = [0]
-    for i in range(1, 10001):  # генерация книги, магазина, цены за экземпляр, кол-ва экземпляров, даты поставки соответственно
-        data = data + f'({id[0] + i}, \'{random.randrange(1, book[0])}\', \'{random.randrange(1, shop[0])}\', \'{random.randrange(300, 3000)}\', \'{random.randrange(1, 1000)}\', {random.randrange(10, 28)}.0{random.randrange(1, 9)}.{random.randrange(2020, 2023)})'
-        if i < 10000:
-            data = data + ', '
+    data = data + f'(\'{random.randrange(1, book[0])}\', \'{random.randrange(1, shop[0])}\', \'{random.randrange(300, 3000)}\', \'{random.randrange(1, 1000)}\', \'{random.randrange(10, 28)}.0{random.randrange(1, 9)}.{random.randrange(2020, 2023)}\')'
     return data
 
 
