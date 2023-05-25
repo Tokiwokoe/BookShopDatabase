@@ -1,7 +1,8 @@
 import datetime
 
 from PyQt5.QtWidgets import QDialog
-from UIclass import add_book, add_author, add_book_in_shop, add_pm, add_sm
+from UIclass import add_book, add_author, add_book_in_shop, add_shop_manager, add_publish_manager
+from PyQt5 import QtWidgets
 
 
 class AddBook(QDialog, add_book.Ui_Dialog):
@@ -119,12 +120,13 @@ class AddBookInShop(QDialog, add_book_in_shop.Ui_Dialog):
             self.error.setText('Проверьте корректность заполнения полей!')
 
 
-class AddPm(QDialog, add_pm.Ui_Dialog):
+class AddPm(QDialog, add_publish_manager.Ui_Dialog):
     def __init__(self, connection, cursor):
         super(AddPm, self).__init__()
+        self.setupUi(self)
         self.connection = connection
         self.cursor = cursor
-        self.Add_button.clicked.connect(self.correct_data)
+        self.add_button.clicked.connect(self.correct_data)
 
     def correct_data(self):
         login = self.log.text()
@@ -134,7 +136,7 @@ class AddPm(QDialog, add_pm.Ui_Dialog):
                 query = 'SELECT id FROM "Publish_manager" ORDER BY id DESC LIMIT 1'
                 self.cursor.execute(query)
                 self.id = self.cursor.fetchone()
-                query = f"INSERT INTO \"Publish_manager\" VALUES({int(self.id[0]) + 1}, {login}, {departament}')"
+                query = f"INSERT INTO \"Publish_manager\" VALUES({int(self.id[0]) + 1}, '{login}', {departament})"
                 self.cursor.execute(query)
                 self.connection.commit()
                 self.error.setText('Успешно добавлено')
@@ -145,12 +147,13 @@ class AddPm(QDialog, add_pm.Ui_Dialog):
             self.error.setText('Проверьте корректность заполнения полей!')
 
 
-class AddSm(QDialog, add_sm.Ui_Dialog):
+class AddSm(QDialog, add_shop_manager.Ui_Dialog):
     def __init__(self, connection, cursor):
         super(AddSm, self).__init__()
+        self.setupUi(self)
         self.connection = connection
         self.cursor = cursor
-        self.Add_button.clicked.connect(self.correct_data)
+        self.add_button.clicked.connect(self.correct_data)
 
     def correct_data(self):
         login = self.log.text()
@@ -160,7 +163,7 @@ class AddSm(QDialog, add_sm.Ui_Dialog):
                 query = 'SELECT id FROM "Shop_manager" ORDER BY id DESC LIMIT 1'
                 self.cursor.execute(query)
                 self.id = self.cursor.fetchone()
-                query = f"INSERT INTO \"Shop_manager\" VALUES({int(self.id[0]) + 1}, {login}, {departament}')"
+                query = f"INSERT INTO \"Shop_manager\" VALUES({int(self.id[0]) + 1}, '{login}', {departament})"
                 self.cursor.execute(query)
                 self.connection.commit()
                 self.error.setText('Успешно добавлено')
@@ -169,3 +172,4 @@ class AddSm(QDialog, add_sm.Ui_Dialog):
                 self.error.setText('Что-то пошло не так :(')
         else:
             self.error.setText('Проверьте корректность заполнения полей!')
+

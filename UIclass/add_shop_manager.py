@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'add_sm.ui'
+# Form implementation generated from reading ui file 'add_shop_manager.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.7
 #
@@ -57,12 +57,12 @@ class Ui_Dialog(object):
 "font: \"Arial Black\";")
         self.label_6.setAlignment(QtCore.Qt.AlignCenter)
         self.label_6.setObjectName("label_6")
-        self.Add = QtWidgets.QPushButton(Dialog)
-        self.Add.setGeometry(QtCore.QRect(550, 160, 81, 30))
-        self.Add.setStyleSheet("font-size: 16px;\n"
+        self.add_button = QtWidgets.QPushButton(Dialog)
+        self.add_button.setGeometry(QtCore.QRect(550, 160, 81, 30))
+        self.add_button.setStyleSheet("font-size: 16px;\n"
 "font: \"Yu Gothic UI Semibold\";\n"
 "background-color: rgb(245, 245, 245)")
-        self.Add.setObjectName("Add")
+        self.add_button.setObjectName("add_button")
         self.error = QtWidgets.QLabel(Dialog)
         self.error.setGeometry(QtCore.QRect(10, 160, 531, 31))
         self.error.setStyleSheet("color: red;\n"
@@ -81,7 +81,7 @@ class Ui_Dialog(object):
         self.label_2.setText(_translate("Dialog", "Добавление нового менеджера магазина"))
         self.label_3.setText(_translate("Dialog", "Логин"))
         self.label_6.setText(_translate("Dialog", "Номер заведения"))
-        self.Add.setText(_translate("Dialog", "Добавить"))
+        self.add_button.setText(_translate("Dialog", "Добавить"))
 
 
 if __name__ == "__main__":
