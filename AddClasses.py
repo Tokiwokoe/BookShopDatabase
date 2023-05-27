@@ -2,7 +2,6 @@ import datetime
 
 from PyQt5.QtWidgets import QDialog
 from UIclass import add_book, add_author, add_book_in_shop, add_shop_manager, add_publish_manager
-from PyQt5 import QtWidgets
 
 
 class AddBook(QDialog, add_book.Ui_Dialog):

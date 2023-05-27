@@ -3,7 +3,7 @@ import psycopg2
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
 
 from AddClasses import AddBook, AddAuthor, AddBookInShop, AddPm, AddSm
-from UIclass import main_window, LoginScreen, publish_manager, shop_manager, admin, delete, DeleteMessage
+from UIclass import main_window, LoginScreen, publish_manager, shop_manager, admin, delete, DeleteMessage, queries
 
 
 class AuthWindow(QMainWindow, LoginScreen.Ui_Auth):
@@ -86,7 +86,7 @@ class PrintTable(QMainWindow):
 
     def to_print_lang(self):
         query = 'SELECT * FROM "Language_view"'
-        self.labels = ['Язык']
+        self.labels = ['id', 'Язык']
         self.to_print_table(query)
 
     def to_print_prop(self):
@@ -146,10 +146,15 @@ class MainMenu(PrintTable, main_window.Ui_MainWindow):
         self.Print_publish.clicked.connect(self.to_print_publish)
         self.Print_shop.clicked.connect(self.to_print_shop)
         self.Workers_button.clicked.connect(self.to_add_worker)
+        self.Queries_button.clicked.connect(self.queries)
         self.connection = connection
         self.cursor = cursor
         self.current_user = current_user
         self.role_group = role_group
+
+    def queries(self):
+        self.q = Queries(self.connection, self.cursor)
+        self.q.show()
 
     def to_add_worker(self):
         self.worker = AddWorker(self.connection, self.cursor, self.current_user, self.role_group)
@@ -396,6 +401,263 @@ class Delete(QMainWindow, delete.Ui_Dialog):
             table = '"Author"'
         self.message = DeleteMessage(self.connection, self.cursor)
         self.message.show()
+
+
+class Queries(QMainWindow, queries.Ui_Dialog):
+    def __init__(self, connection, cursor):
+        super(Queries, self).__init__()
+        self.setupUi(self)
+        self.connection = connection
+        self.cursor = cursor
+        self.queries.currentTextChanged.connect(self.handle_queries_change)  # Подключение сигнала
+        self.queries.addItem('Магазины в выбранном районе. Симметричное внутреннее соединение с условием отбора по внешнему ключу')
+        self.queries.addItem('Авторы из выбранной страны. Симметричное внутреннее соединение с условием отбора по внешнему ключу')
+        self.queries.addItem('Магазины, открытые в выбранном году. Симметричное внутреннее соединение с условием отбора по датам')
+        self.queries.addItem('Магазины, открытые между выбранными годами. Симметричное внутреннее соединение с условием отбора по датам')
+        self.queries.addItem('Номер магазина, район и год открытия. Симметричное внутреннее соединение без условия')
+        self.queries.addItem('Дата рождения, имя и страна автора. Номер магазина, район и год открытия. Симметричное внутреннее соединение без условия')
+        self.queries.addItem('Автор, название и язык его книги. Симметричное внутреннее соединение без условия')
+        self.queries.addItem('Имя, страна, дата рождения и дата смерти автора. Левое внешнее соединение')
+        self.queries.addItem('Имя, страна, дата рождения и дата смерти автора. Правое внешнее соединение')
+        self.queries.addItem('Имя, страна, дата рождения и дата смерти выбранного автора. Запрос на запросе по принципу левого соединения')
+        self.queries.addItem('ID издания, количество выпущенных книг. Итоговый запрос без условия')
+        self.queries.addItem('ID издания, количество выпущенных книг. Итоговый запрос с условием на данные')
+        self.queries.addItem('ID издания, количество выпущенных книг. Итоговый запрос с условием на группы')
+        self.queries.addItem('ID издания, количество выпущенных книг. Итоговый запрос с условием на данные и на группы')
+        self.queries.addItem('ID издания, количество выпущенных книг. Запрос на запросе по принципу итогового запроса')
+        self.queries.addItem('ID издания, город, количество выпущенных книг. Запрос с подзапросом')
+
+    def handle_queries_change(self):
+        if self.queries.currentText() == 'Магазины в выбранном районе. Симметричное внутреннее соединение с условием отбора по внешнему ключу':
+            self.hide_all()
+            self.label_combo.show()
+            self.label_combo.setText('Выберите район')
+            self.comboBox.show()
+            query = 'SELECT id, name FROM "District"'
+            self.cursor.execute(query)
+            for t in self.cursor.fetchall():
+                self.comboBox.addItem(str(t))
+            district = self.comboBox.currentText().replace('(', '').replace(')', '').replace(' \'', '\'').split(',')
+            district_id = str(district[0])
+            self.labels = ['Номер магазина', 'Район', 'Год открытия']
+            self.query = f'SELECT * FROM query1({district_id})'
+            self.comboBox.currentTextChanged.connect(self.q1)
+        elif self.queries.currentText() == 'Авторы из выбранной страны. Симметричное внутреннее соединение с условием отбора по внешнему ключу':
+            self.hide_all()
+            self.label_combo.show()
+            self.comboBox.show()
+            self.label_combo.setText('Выберите страну')
+            self.comboBox.show()
+            query = 'SELECT id, name FROM "Country"'
+            self.cursor.execute(query)
+            for t in self.cursor.fetchall():
+                self.comboBox.addItem(str(t))
+            country = self.comboBox.currentText().replace('(', '').replace(')', '').replace(' \'', '\'').split(',')
+            country_id = str(country[0])
+            self.labels = ['Дата рождения', 'Автор', 'Страна']
+            self.query = f'SELECT * FROM query2({country_id})'
+            self.comboBox.currentTextChanged.connect(self.q2)
+        elif self.queries.currentText() == 'Магазины, открытые в выбранном году. Симметричное внутреннее соединение с условием отбора по датам':
+            self.hide_all()
+            self.label_text.show()
+            self.textEdit.show()
+            self.textEdit.setText('')
+            self.label_text.setText('Выберите год')
+            self.textEdit.textChanged.connect(self.q3)  # Подключение сигнала
+        elif self.queries.currentText() == 'Магазины, открытые между выбранными годами. Симметричное внутреннее соединение с условием отбора по датам':
+            self.hide_all()
+            self.label_text.show()
+            self.textEdit.show()
+            self.label_text_2.show()
+            self.textEdit_2.show()
+            self.textEdit.setText('')
+            self.textEdit_2.setText('')
+            self.label_text.setText('Выберите начальный год')
+            self.label_text_2.setText('Выберите конечный год')
+            self.textEdit.textChanged.connect(self.q4)
+            self.textEdit_2.textChanged.connect(self.q4)
+        elif self.queries.currentText() == 'Номер магазина, район и год открытия. Симметричное внутреннее соединение без условия':
+            self.hide_all()
+            self.labels = ['Номер магазига', 'Район', 'Год открытия']
+            self.query = 'SELECT * FROM query5()'
+        elif self.queries.currentText() == 'Дата рождения, имя и страна автора. Номер магазина, район и год открытия. Симметричное внутреннее соединение без условия':
+            self.hide_all()
+            self.labels = ['Дата рождения', 'Автор', 'Страна']
+            self.query = 'SELECT * FROM query6()'
+        elif self.queries.currentText() == 'Автор, название и язык его книги. Симметричное внутреннее соединение без условия':
+            self.hide_all()
+            self.labels = ['ФИО', 'Книга', 'Язык']
+            self.query = f'SELECT * FROM query7()'
+        elif self.queries.currentText() == 'Имя, страна, дата рождения и дата смерти автора. Левое внешнее соединение':
+            self.hide_all()
+            self.labels = ['ФИО', 'Страна', 'Дата рождения', 'Дата смерти']
+            self.query = f'SELECT * FROM query8()'
+        elif self.queries.currentText() == 'Имя, страна, дата рождения и дата смерти автора. Правое внешнее соединение':
+            self.hide_all()
+            self.labels = ['ФИО', 'Страна', 'Дата рождения', 'Дата смерти']
+            self.query = f'SELECT * FROM query9()'
+        elif self.queries.currentText() == 'Имя, страна, дата рождения и дата смерти выбранного автора. Запрос на запросе по принципу левого соединения':
+            self.hide_all()
+            self.textEdit.setText('')
+            self.label_text.show()
+            self.textEdit.show()
+            self.label_text.setText('Выберите имя')
+            self.textEdit.textChanged.connect(self.q10)
+        elif self.queries.currentText() == 'ID издания, количество выпущенных книг. Итоговый запрос без условия':
+            self.hide_all()
+            self.labels = ['ID издания', 'Количество выпущенных книг']
+            self.query = f'SELECT * FROM query11()'
+        elif self.queries.currentText() == 'ID издания, количество выпущенных книг. Итоговый запрос с условием на данные':
+            self.hide_all()
+            self.label_text.show()
+            self.textEdit.show()
+            self.label_text_2.show()
+            self.textEdit_2.show()
+            self.textEdit.setText('')
+            self.textEdit_2.setText('')
+            self.label_text.setText('Выберите начальный ID издательства')
+            self.label_text_2.setText('Выберите конечный ID издательства')
+            self.textEdit.textChanged.connect(self.q12)
+            self.textEdit_2.textChanged.connect(self.q12)
+        elif self.queries.currentText() == 'ID издания, количество выпущенных книг. Итоговый запрос с условием на группы':
+            self.hide_all()
+            self.label_text.show()
+            self.textEdit.show()
+            self.label_text.setText('Выберите количество книг')
+            self.textEdit.textChanged.connect(self.q13)
+        elif self.queries.currentText() == 'ID издания, количество выпущенных книг. Итоговый запрос с условием на данные и на группы':
+            self.hide_all()
+            self.label_text.show()
+            self.textEdit.show()
+            self.label_text_2.show()
+            self.textEdit_2.show()
+            self.label_text_3.show()
+            self.textEdit_3.show()
+            self.textEdit.setText('')
+            self.textEdit_2.setText('')
+            self.label_text.setText('Выберите начальный ID издательства')
+            self.label_text_2.setText('Выберите конечный ID издательства')
+            self.label_text_3.setText('Выберите количество книг')
+            self.textEdit.textChanged.connect(self.q14)
+            self.textEdit_2.textChanged.connect(self.q14)
+            self.textEdit_3.textChanged.connect(self.q14)
+        elif self.queries.currentText() == 'ID издания, количество выпущенных книг. Запрос на запросе по принципу итогового запроса':
+            self.hide_all()
+            self.label_text.show()
+            self.textEdit.show()
+            self.label_text.setText('Выберите количество книг')
+            self.textEdit.textChanged.connect(self.q15)
+        elif self.queries.currentText() == 'ID издания, город, количество выпущенных книг. Запрос с подзапросом':
+            self.hide_all()
+            self.label_combo.show()
+            self.comboBox.show()
+            self.label_combo.setText('Выберите город')
+            self.comboBox.show()
+            query = 'SELECT id, name FROM "City"'
+            self.cursor.execute(query)
+            for t in self.cursor.fetchall():
+                self.comboBox.addItem(str(t))
+            city = self.comboBox.currentText().replace('(', '').replace(')', '').replace(' \'', '\'').split(',')
+            city_id = str(city[0])
+            self.labels = ['ID издания', 'Город', 'Количество выпущенных книг']
+            self.query = f'SELECT * FROM query16({city_id})'
+            self.comboBox.currentTextChanged.connect(self.q16)
+
+        self.print.clicked.connect(self.to_print)
+
+    def q1(self):
+        district = self.comboBox.currentText().replace('(', '').replace(')', '').replace(' \'', '\'').split(',')
+        district_id = str(district[0])
+        self.labels = ['Номер магазина', 'Район', 'Год открытия']
+        self.query = f'SELECT * FROM query1({district_id})'
+
+    def q2(self):
+        country = self.comboBox.currentText().replace('(', '').replace(')', '').replace(' \'', '\'').split(',')
+        country_id = str(country[0])
+        self.labels = ['Дата рождения', 'Автор', 'Страна']
+        self.query = f'SELECT * FROM query2({country_id})'
+
+    def q3(self):
+        year = self.textEdit.text()
+        self.labels = ['Номер магазига', 'Район', 'Год открытия']
+        self.query = f'SELECT * FROM query3({year})'
+
+    def q4(self):
+        year1 = self.textEdit.text()
+        year2 = self.textEdit_2.text()
+        self.labels = ['Номер магазига', 'Район', 'Год открытия']
+        self.query = f'SELECT * FROM query4({year1}, {year2})'
+
+    def q10(self):
+        name = self.textEdit.text()
+        self.labels = ['id Автора', 'ФИО', 'Страна', 'Дата рождения', 'Дата смерти']
+        self.query = f"SELECT * FROM query10('{name}')"
+
+    def q12(self):
+        publish1 = self.textEdit.text()
+        publish2 = self.textEdit_2.text()
+        self.labels = ['ID издания', 'Количество выпущенных книг']
+        self.query = f'SELECT * FROM query12({publish1}, {publish2})'
+
+    def q13(self):
+        book_count = self.textEdit.text()
+        self.labels = ['ID издания', 'Количество выпущенных книг']
+        self.query = f'SELECT * FROM query13({book_count})'
+
+    def q14(self):
+        id1 = self.textEdit.text()
+        id2 = self.textEdit_2.text()
+        book_count = self.textEdit_3.text()
+        self.labels = ['ID издания', 'Количество выпущенных книг']
+        self.query = f'SELECT * FROM query14({id1}, {id2}, {book_count})'
+
+    def q15(self):
+        book_count = self.textEdit.text()
+        self.labels = ['ID издания', 'Количество выпущенных книг']
+        self.query = f'SELECT * FROM query15({book_count})'
+
+    def q16(self):
+        query = 'SELECT id, name FROM "City"'
+        self.cursor.execute(query)
+        for t in self.cursor.fetchall():
+            self.comboBox.addItem(str(t))
+        city = self.comboBox.currentText().replace('(', '').replace(')', '').replace(' \'', '\'').split(',')
+        city_id = str(city[0])
+        self.query = f'SELECT * FROM query16({city_id})'
+
+    def hide_all(self):
+        self.label_text.hide()
+        self.textEdit.hide()
+        self.label_combo.hide()
+        self.comboBox.hide()
+        self.label_text_2.hide()
+        self.comboBox.clear()
+        self.textEdit_2.hide()
+        self.textEdit.clear()
+        self.textEdit_2.clear()
+        self.textEdit_3.clear()
+        self.label_text_3.hide()
+        self.textEdit_3.hide()
+
+    def to_print(self):
+        try:
+            self.cursor.execute(self.query)
+            self.rows = self.cursor.fetchall()
+            self.tableWidget.setRowCount(len(self.rows))
+            self.tableWidget.setColumnCount(len(self.labels))
+            self.tableWidget.setHorizontalHeaderLabels(self.labels)
+            i = 0
+            for elem in self.rows:
+                j = 0
+                for t in elem:
+                    self.tableWidget.setItem(i, j, QTableWidgetItem(str(t).strip()))
+                    j += 1
+                i += 1
+            i = 0
+            self.tableWidget.resizeColumnsToContents()
+        except psycopg2.Error as err:
+            print(err)
+            self.error.setText('Проверьте ввод!')
 
 
 if __name__ == '__main__':
