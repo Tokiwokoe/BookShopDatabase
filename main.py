@@ -1,9 +1,12 @@
 import sys
 import psycopg2
-from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
-
+import openpyxl
+from PyQt5.QtGui import QPainter
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QGraphicsScene
+from PyQt5.QtChart import QChart, QChartView, QBarSeries, QBarSet, QBarCategoryAxis, QValueAxis
 from AddClasses import AddBook, AddAuthor, AddBookInShop, AddPm, AddSm
-from UIclass import main_window, LoginScreen, publish_manager, shop_manager, admin, delete, DeleteMessage, queries
+from UIclass import main_window, LoginScreen, publish_manager, shop_manager, admin, delete, DeleteMessage, queries, graphics, Add
 
 
 class AuthWindow(QMainWindow, LoginScreen.Ui_Auth):
@@ -11,7 +14,6 @@ class AuthWindow(QMainWindow, LoginScreen.Ui_Auth):
         super(AuthWindow, self).__init__()
         self.setupUi(self)
         self.login.clicked.connect(self.to_login)
-        self.sign_up.clicked.connect(self.to_sign_up)
 
     def to_login(self):
         try:
@@ -49,9 +51,6 @@ class AuthWindow(QMainWindow, LoginScreen.Ui_Auth):
         except psycopg2.Error as err:
             print(err)
             self.error.setText('Проверьте ввод')
-
-    def to_sign_up(self):
-        ...
 
 
 class PrintTable(QMainWindow):
@@ -101,7 +100,7 @@ class PrintTable(QMainWindow):
 
     def to_print_book(self):
         query = 'SELECT * FROM "Book_view"'
-        self.labels = ['id', 'Название книги', 'Год выпуска', 'Язык', 'Издательство', 'Тип собственности']
+        self.labels = ['id', 'Название книги', 'Год выпуска', 'Язык', 'Автор', 'Телефон издательства']
         self.to_print_table(query)
 
     def to_print_author(self):
@@ -147,6 +146,8 @@ class MainMenu(PrintTable, main_window.Ui_MainWindow):
         self.Print_shop.clicked.connect(self.to_print_shop)
         self.Workers_button.clicked.connect(self.to_add_worker)
         self.Queries_button.clicked.connect(self.queries)
+        self.Delete_button.clicked.connect(self.to_delete)
+        self.Change_button.clicked.connect(self.to_add)
         self.connection = connection
         self.cursor = cursor
         self.current_user = current_user
@@ -159,6 +160,14 @@ class MainMenu(PrintTable, main_window.Ui_MainWindow):
     def to_add_worker(self):
         self.worker = AddWorker(self.connection, self.cursor, self.current_user, self.role_group)
         self.worker.show()
+
+    def to_delete(self):
+        self.delete = Delete(self.connection, self.cursor, self.role_group)
+        self.delete.show()
+
+    def to_add(self):
+        self.add = Add(self.connection, self.cursor, self.role_group)
+        self.add.show()
 
 
 class PublishMenu(QMainWindow, publish_manager.Ui_Dialog):
@@ -320,9 +329,9 @@ class AddWorker(PrintTable, admin.Ui_Dialog):
         sm.exec_()
 
 
-class DeleteMessage(QMainWindow, DeleteMessage.Ui_Dialog):
+class DeleteMess(QMainWindow, DeleteMessage.Ui_Dialog):
     def __init__(self, connection, cursor):
-        super(DeleteMessage, self).__init__()
+        super(DeleteMess, self).__init__()
         self.setupUi(self)
         self.setFixedSize(560, 150)
         self.connection = connection
@@ -399,7 +408,7 @@ class Delete(QMainWindow, delete.Ui_Dialog):
             table = '"Book"'
         elif self.table.currentText() == 'Магазин':
             table = '"Author"'
-        self.message = DeleteMessage(self.connection, self.cursor)
+        self.message = DeleteMess(self.connection, self.cursor)
         self.message.show()
 
 
@@ -425,7 +434,7 @@ class Queries(QMainWindow, queries.Ui_Dialog):
         self.queries.addItem('ID издания, количество выпущенных книг. Итоговый запрос с условием на группы')
         self.queries.addItem('ID издания, количество выпущенных книг. Итоговый запрос с условием на данные и на группы')
         self.queries.addItem('ID издания, количество выпущенных книг. Запрос на запросе по принципу итогового запроса')
-        self.queries.addItem('ID издания, город, количество выпущенных книг. Запрос с подзапросом')
+        self.queries.addItem('ID издания, количество выпущенных книг. Запрос с подзапросом')
 
     def handle_queries_change(self):
         if self.queries.currentText() == 'Магазины в выбранном районе. Симметричное внутреннее соединение с условием отбора по внешнему ключу':
@@ -519,12 +528,16 @@ class Queries(QMainWindow, queries.Ui_Dialog):
             self.label_text_2.setText('Выберите конечный ID издательства')
             self.textEdit.textChanged.connect(self.q12)
             self.textEdit_2.textChanged.connect(self.q12)
+            self.excel_btn.show()
+            self.graph_btn.show()
         elif self.queries.currentText() == 'ID издания, количество выпущенных книг. Итоговый запрос с условием на группы':
             self.hide_all()
             self.label_text.show()
             self.textEdit.show()
             self.label_text.setText('Выберите количество книг')
             self.textEdit.textChanged.connect(self.q13)
+            self.excel_btn.show()
+            self.graph_btn.show()
         elif self.queries.currentText() == 'ID издания, количество выпущенных книг. Итоговый запрос с условием на данные и на группы':
             self.hide_all()
             self.label_text.show()
@@ -541,13 +554,17 @@ class Queries(QMainWindow, queries.Ui_Dialog):
             self.textEdit.textChanged.connect(self.q14)
             self.textEdit_2.textChanged.connect(self.q14)
             self.textEdit_3.textChanged.connect(self.q14)
+            self.excel_btn.show()
+            self.graph_btn.show()
         elif self.queries.currentText() == 'ID издания, количество выпущенных книг. Запрос на запросе по принципу итогового запроса':
             self.hide_all()
             self.label_text.show()
             self.textEdit.show()
             self.label_text.setText('Выберите количество книг')
             self.textEdit.textChanged.connect(self.q15)
-        elif self.queries.currentText() == 'ID издания, город, количество выпущенных книг. Запрос с подзапросом':
+            self.excel_btn.show()
+            self.graph_btn.show()
+        elif self.queries.currentText() == 'ID издания, количество выпущенных книг. Запрос с подзапросом':
             self.hide_all()
             self.label_combo.show()
             self.comboBox.show()
@@ -559,11 +576,13 @@ class Queries(QMainWindow, queries.Ui_Dialog):
                 self.comboBox.addItem(str(t))
             city = self.comboBox.currentText().replace('(', '').replace(')', '').replace(' \'', '\'').split(',')
             city_id = str(city[0])
-            self.labels = ['ID издания', 'Город', 'Количество выпущенных книг']
+            self.labels = ['ID издания', 'Количество выпущенных книг']
             self.query = f'SELECT * FROM query16({city_id})'
             self.comboBox.currentTextChanged.connect(self.q16)
 
         self.print.clicked.connect(self.to_print)
+        self.graph_btn.clicked.connect(self.create_chart)
+        self.excel_btn.clicked.connect(self.export_to_excel)
 
     def q1(self):
         district = self.comboBox.currentText().replace('(', '').replace(')', '').replace(' \'', '\'').split(',')
@@ -638,6 +657,13 @@ class Queries(QMainWindow, queries.Ui_Dialog):
         self.textEdit_3.clear()
         self.label_text_3.hide()
         self.textEdit_3.hide()
+        self.graph_btn.hide()
+        self.excel_btn.hide()
+
+    def create_chart(self):
+        self.label = self.queries.currentText()
+        self.chart = Chart(self.connection, self.cursor, self.query, self.label)
+        self.chart.show()
 
     def to_print(self):
         try:
@@ -658,6 +684,106 @@ class Queries(QMainWindow, queries.Ui_Dialog):
         except psycopg2.Error as err:
             print(err)
             self.error.setText('Проверьте ввод!')
+
+    def export_to_excel(self):
+        self.label = self.queries.currentText().split('. ')
+        self.cursor = self.connection.cursor()
+        book = openpyxl.Workbook()
+        sheet = book.active
+        self.cursor.execute(self.query)
+        results = self.cursor.fetchall()
+        i = 0
+        for row in results:
+            i += 1
+            j = 1
+            for col in row:
+                cell = sheet.cell(row=i, column=j)
+                cell.value = col
+                j += 1
+        try:
+            book.save(f"{self.label[1]}.xlsx")
+            self.error.setText('Успешно!')
+        except Exception as err:
+            print(err)
+            self.error.setText('Ошибка!')
+
+
+class Chart(QMainWindow, graphics.Ui_Dialog):
+    def __init__(self, connection, cursor, query, label):
+        super(Chart, self).__init__()
+        self.setupUi(self)
+        self.connection = connection
+        self.cursor = cursor
+        self.query = query
+        self.label = label.split('. ')
+        self.cursor.execute(self.query)
+        self.graphics_name.setText(self.label[1])
+        data = self.cursor.fetchall()
+        categories = [str(row[0]) for row in data]
+        values = [row[1] for row in data]
+        series = QBarSeries()
+        bar_set = QBarSet("Количество книг у издательства")
+        for value in values:
+            bar_set.append(value)
+        series.append(bar_set)
+        chart = QChart()
+        chart.addSeries(series)
+        axis_x = QBarCategoryAxis()
+        axis_x.append(categories)
+        chart.addAxis(axis_x, Qt.AlignBottom)
+        series.attachAxis(axis_x)
+        axis_y = QValueAxis()
+        chart.addAxis(axis_y, Qt.AlignLeft)
+        series.attachAxis(axis_y)
+        chart_view = QChartView(chart)
+        chart_view.setRenderHint(QPainter.Antialiasing)
+        scene = QGraphicsScene()
+        scene.addItem(chart)
+        chart.setMinimumSize(500, 500)
+        scene.setSceneRect(chart.rect())
+        self.graphicsView.setScene(scene)
+
+
+class Add(QMainWindow, Add.Ui_Dialog):
+    def __init__(self, connection, cursor, role_group):
+        super(Add, self).__init__()
+        self.setupUi(self)
+        self.role_group = role_group
+        self.connection = connection
+        self.cursor = cursor
+        if role_group == 'admins':
+            self.table.addItem('Район')
+            self.table.addItem('Город')
+            self.table.addItem('Страна')
+            self.table.addItem('Тип собственности')
+            self.table.addItem('Язык')
+            self.table.addItem('Менеджер магазина')
+            self.table.addItem('Менеджер издательства')
+        self.OKbutton.clicked.connect(self.to_add)
+
+    def to_add(self):
+        if self.table.currentText() == 'Район':
+            self.table_name = '"District"'
+        elif self.table.currentText() == 'Город':
+            self.table_name = '"City"'
+        elif self.table.currentText() == 'Страна':
+            self.table_name = '"Country"'
+        elif self.table.currentText() == 'Тип собственности':
+            self.table_name = '"Property_type"'
+        elif self.table.currentText() == 'Язык':
+            self.table_name = '"Language"'
+        try:
+            self.name = self.id.text()
+            query = f'SELECT id FROM {self.table_name} ORDER BY id DESC LIMIT 1'
+            self.cursor.execute(query)
+            self.name_id = self.cursor.fetchone()
+            query = f"INSERT INTO {self.table_name} VALUES({int(self.name_id[0]) + 1}, '{self.name}')"
+            self.cursor.execute(query)
+            self.connection.commit()
+            self.error.setText('Успешно добавлено')
+        except Exception as err:
+            print(err)
+            self.error.setText('Ошибка!')
 
 
 if __name__ == '__main__':

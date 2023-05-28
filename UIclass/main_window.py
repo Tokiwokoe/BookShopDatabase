@@ -94,7 +94,7 @@ class Ui_MainWindow(object):
 "background-color: rgb(245, 245, 245)")
         self.Print_publish.setObjectName("Print_publish")
         self.Change_button = QtWidgets.QPushButton(self.centralwidget)
-        self.Change_button.setGeometry(QtCore.QRect(470, 440, 351, 40))
+        self.Change_button.setGeometry(QtCore.QRect(470, 440, 171, 40))
         self.Change_button.setStyleSheet("font-size: 16px;\n"
 "font: \"Yu Gothic UI Semibold\";\n"
 "background-color: rgb(245, 245, 245)")
@@ -117,6 +117,12 @@ class Ui_MainWindow(object):
 "font: \"Yu Gothic UI Semibold\";\n"
 "background-color: rgb(245, 245, 245)")
         self.Queries_button.setObjectName("Queries_button")
+        self.Delete_button = QtWidgets.QPushButton(self.centralwidget)
+        self.Delete_button.setGeometry(QtCore.QRect(660, 440, 161, 40))
+        self.Delete_button.setStyleSheet("font-size: 16px;\n"
+"font: \"Yu Gothic UI Semibold\";\n"
+"background-color: rgb(245, 245, 245)")
+        self.Delete_button.setObjectName("Delete_button")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 860, 21))
@@ -146,6 +152,7 @@ class Ui_MainWindow(object):
         self.Print_book_in_shop.setText(_translate("MainWindow", "Книги в магазинах"))
         self.Workers_button.setText(_translate("MainWindow", "Редактировать пользователей"))
         self.Queries_button.setText(_translate("MainWindow", "Перейти в режим запросов"))
+        self.Delete_button.setText(_translate("MainWindow", "Удаление из таблицы"))
 
 
 if __name__ == "__main__":

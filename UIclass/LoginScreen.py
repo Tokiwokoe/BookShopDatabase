@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Auth(object):
     def setupUi(self, Auth):
         Auth.setObjectName("Auth")
-        Auth.resize(280, 333)
+        Auth.resize(280, 280)
         Auth.setStyleSheet("background-color: rgb(245, 245, 175)")
         self.login = QtWidgets.QPushButton(Auth)
         self.login.setGeometry(QtCore.QRect(60, 230, 161, 41))
@@ -61,12 +61,6 @@ class Ui_Auth(object):
         self.error.setText("")
         self.error.setAlignment(QtCore.Qt.AlignCenter)
         self.error.setObjectName("error")
-        self.sign_up = QtWidgets.QPushButton(Auth)
-        self.sign_up.setGeometry(QtCore.QRect(60, 280, 161, 41))
-        self.sign_up.setStyleSheet("font-size: 16px;\n"
-"font: \"Yu Gothic UI Semibold\";\n"
-"background-color: rgb(245, 245, 245)")
-        self.sign_up.setObjectName("sign_up")
 
         self.retranslateUi(Auth)
         QtCore.QMetaObject.connectSlotsByName(Auth)
@@ -78,7 +72,6 @@ class Ui_Auth(object):
         self.label.setText(_translate("Auth", "Логин"))
         self.label_2.setText(_translate("Auth", "Пароль"))
         self.label_3.setText(_translate("Auth", "Авторизация"))
-        self.sign_up.setText(_translate("Auth", "Зарегистрироваться"))
 
 
 if __name__ == "__main__":

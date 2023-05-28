@@ -103,6 +103,18 @@ class Ui_Dialog(object):
         self.label_text_3.setText("")
         self.label_text_3.setAlignment(QtCore.Qt.AlignCenter)
         self.label_text_3.setObjectName("label_text_3")
+        self.excel_btn = QtWidgets.QPushButton(Dialog)
+        self.excel_btn.setGeometry(QtCore.QRect(940, 270, 151, 41))
+        self.excel_btn.setStyleSheet("font-size: 16px;\n"
+"font: \"Yu Gothic UI Semibold\";\n"
+"background-color: rgb(245, 245, 245)")
+        self.excel_btn.setObjectName("excel_btn")
+        self.graph_btn = QtWidgets.QPushButton(Dialog)
+        self.graph_btn.setGeometry(QtCore.QRect(940, 320, 151, 41))
+        self.graph_btn.setStyleSheet("font-size: 16px;\n"
+"font: \"Yu Gothic UI Semibold\";\n"
+"background-color: rgb(245, 245, 245)")
+        self.graph_btn.setObjectName("graph_btn")
 
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
@@ -111,6 +123,8 @@ class Ui_Dialog(object):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
         self.print.setText(_translate("Dialog", "Обновить"))
+        self.excel_btn.setText(_translate("Dialog", "Экспорт в Excel"))
+        self.graph_btn.setText(_translate("Dialog", "Гистограмма"))
 
 
 if __name__ == "__main__":
